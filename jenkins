@@ -1,0 +1,106 @@
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '5'))
+    }
+
+    environment {
+        DOCKER_IMAGE = "myapp:${env.BUILD_NUMBER}"
+        REGISTRY = "myregistry.com/myapp"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/your-org/your-repo.git'
+            }
+        }
+
+        stage('Compile') {
+            steps {
+                sh 'mvn clean compile'
+            }
+        }
+
+        stage('Unit Tests') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    sh 'mvn sonar:sonar'
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 1, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Package') {
+            steps {
+                sh 'mvn package'
+            }
+        }
+
+        stage('Push Artifact to Nexus') {
+            steps {
+                sh 'mvn deploy'
+            }
+        }
+
+        stage('Docker Build & Tag') {
+            steps {
+                sh "docker build -t ${DOCKER_IMAGE} ."
+            }
+        }
+
+        stage('Docker Image Scan') {
+            steps {
+                sh "trivy image ${DOCKER_IMAGE}"
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                sh "docker tag ${DOCKER_IMAGE} ${REGISTRY}:${env.BUILD_NUMBER}"
+                sh "docker push ${REGISTRY}:${env.BUILD_NUMBER}"
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh "kubectl set image deployment/myapp myapp=${REGISTRY}:${env.BUILD_NUMBER}"
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                sh "kubectl rollout status deployment/myapp"
+            }
+        }
+    }
+
+    post {
+        success {
+            mail to: 'team@example.com',
+                 subject: "Pipeline Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                 body: "Deployment completed successfully."
+        }
+        failure {
+            mail to: 'team@example.com',
+                 subject: "Pipeline Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                 body: "Please check Jenkins logs."
+        }
+    }
+}
