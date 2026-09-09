@@ -1,0 +1,25 @@
+---
+- name: Deploy application to Tomcat
+  hosts: tomcat
+  become: yes
+
+  tasks:
+    - name: Ensure Tomcat is installed
+      yum:
+        name: tomcat
+        state: present
+
+    - name: Copy WAR file to Tomcat webapps
+      copy:
+        src: target/yourapp.war
+        dest: /usr/share/tomcat/webapps/yourapp.war
+        owner: tomcat
+        group: tomcat
+        mode: '0644'
+
+    - name: Restart Tomcat
+      systemd:
+        name: tomcat
+        state: restarted
+---
+
