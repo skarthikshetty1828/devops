@@ -1,0 +1,33 @@
+name: Build and Deploy to Tomcat
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build_deploy_tomcat:
+   # runs-on: ubuntu-latest
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # - name: Set up Java
+      #   uses: actions/setup-java@v4
+      #   with:
+      #     distribution: temurin
+      #     java-version: '17'   # Change if your project uses Java 8, 11, etc.
+
+      - name: Build WAR file
+        run: mvn clean package
+
+      - name: Deploy WAR to Tomcat
+        run: |
+          WAR_FILE=$(ls target/*.war | head -n 1)
+          APP_NAME=b17dapp
+
+          curl -u "${{ secrets.TOMCAT_USERNAME }}:${{ secrets.TOMCAT_PASSWORD }}" \
+            --upload-file "$WAR_FILE" \
+            "http://${{ secrets.TOMCAT_HOST }}:8081/manager/text/deploy?path=/$APP_NAME&update=true"
