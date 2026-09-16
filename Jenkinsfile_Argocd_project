@@ -11,7 +11,7 @@ pipeline {
             steps {
                 echo 'Checkout Git repo'
                 git branch: 'main',
-                    url: 'https://github.com/devopstraininghub/mindcircuit17d.git'
+                    url: 'https://github.com/skarthikshetty1828/devops.git'
             }
         }
 
@@ -22,8 +22,8 @@ pipeline {
 
                 sh '''
                     mvn sonar:sonar \
-                    -Dsonar.host.url=http://100.31.37.172:9000 \
-                    -Dsonar.token=squ_0f39becdb864b01079c7ca1c09c68e6d1353446f
+                    -Dsonar.host.url=http://98.84.188.49:9000 \
+                    -Dsonar.token=sqa_03f347b46503b3ba34c17bb3e36d7a4f74cb6bd9
                 '''
             }
         }
@@ -40,7 +40,7 @@ pipeline {
                 echo 'Build Docker Image'
 
                 sh '''
-                    docker build -t devopshubg333/batch17d:${BUILD_NUMBER} -f Dockerfile .
+                    docker build -t karthikshetty1828/argo:${BUILD_NUMBER} -f Dockerfile .
                 '''
             }
         }
@@ -50,7 +50,7 @@ pipeline {
                 echo 'Scanning Image'
 
                 sh '''
-                    trivy image devopshubg333/batch17d:${BUILD_NUMBER}
+                    trivy image karthikshetty1828/argo:${BUILD_NUMBER}
                 '''
             }
         }
@@ -61,11 +61,11 @@ pipeline {
                     withCredentials([string(credentialsId: 'dockerhub', variable: 'dockerhub')]) {
 
                         sh '''
-                            docker login -u devopshubg333 -p ${dockerhub}
+                            docker login -u karthikshetty1828 -p ${dockerhub}
                         '''
 
                         sh '''
-                            docker push devopshubg333/batch17d:${BUILD_NUMBER}
+                            docker push karthikshetty1828/argo:${BUILD_NUMBER}
                         '''
                     }
 
@@ -77,8 +77,8 @@ pipeline {
         stage('Update Deployment File') {
 
             environment {
-                GIT_REPO_NAME = "mindcircuit17d"
-                GIT_USER_NAME = "devopstraininghub"
+                GIT_REPO_NAME = "devops"
+                GIT_USER_NAME = "karthikshetty1828"
             }
 
             steps {
@@ -87,113 +87,10 @@ pipeline {
                 withCredentials([string(credentialsId: 'githubtoken', variable: 'githubtoken')]) {
 
                     sh '''
-                        git config user.email "madhuxxxx123@gmail.com"
-                        git config user.name "Madhu"
+                        git config user.email "a.karthikshetty1828@gmail.com"
+                        git config user.name "Karthik Shetty"
 
-                        sed -i "s/batch17d:.*/batch17d:${BUILD_NUMBER}/g" deploymentfiles/deploy.yaml
-
-                        git add .
-                        git commit -m "Update deployment image to version ${BUILD_NUMBER}" || true
-
-                        git push https://${githubtoken}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main
-                    '''
-                }
-            }
-        }
-    }
-}pipeline {
-    agent any
-
-    tools {
-        maven 'maven_3.9.16'
-    }
-
-    stages {
-
-        stage('Checkout') {
-            steps {
-                echo 'Checkout Git repo'
-                git branch: 'main',
-                    url: 'https://github.com/devopstraininghub/mindcircuit17d.git'
-            }
-        }
-
-        stage('SonarQube Scan') {
-            steps {
-                echo 'Scanning project'
-                sh 'ls -ltr'
-
-                sh '''
-                    mvn sonar:sonar \
-                    -Dsonar.host.url=http://100.31.37.172:9000 \
-                    -Dsonar.token=squ_0f39becdb864b01079c7ca1c09c68e6d1353446f
-                '''
-            }
-        }
-
-        stage('Build Artifact') {
-            steps {
-                echo 'Build Artifact'
-                sh 'mvn clean package'
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                echo 'Build Docker Image'
-
-                sh '''
-                    docker build -t devopshubg333/batch17d:${BUILD_NUMBER} -f Dockerfile .
-                '''
-            }
-        }
-
-        stage('Scan Docker Image using Trivy') {
-            steps {
-                echo 'Scanning Image'
-
-                sh '''
-                    trivy image devopshubg333/batch17d:${BUILD_NUMBER}
-                '''
-            }
-        }
-
-        stage('Push to Docker Hub') {
-            steps {
-                script {
-                    withCredentials([string(credentialsId: 'dockerhub', variable: 'dockerhub')]) {
-
-                        sh '''
-                            docker login -u devopshubg333 -p ${dockerhub}
-                        '''
-
-                        sh '''
-                            docker push devopshubg333/batch17d:${BUILD_NUMBER}
-                        '''
-                    }
-
-                    echo 'Pushed to Docker Hub'
-                }
-            }
-        }
-
-        stage('Update Deployment File') {
-
-            environment {
-                GIT_REPO_NAME = "mindcircuit17d"
-                GIT_USER_NAME = "devopstraininghub"
-            }
-
-            steps {
-                echo 'Update Deployment File'
-
-                withCredentials([string(credentialsId: 'githubtoken', variable: 'githubtoken')]) {
-
-                    sh '''
-                        git config user.email "madhuxxxx123@gmail.com"
-                        git config user.name "Madhu"
-
-                        sed -i "s/batch17d:.*/batch17d:${BUILD_NUMBER}/g" deploymentfiles/deploy.yaml
+                        sed -i "s/argo:.*/argo:${BUILD_NUMBER}/g" deploymentfiles/deploy.yaml
 
                         git add .
                         git commit -m "Update deployment image to version ${BUILD_NUMBER}" || true
