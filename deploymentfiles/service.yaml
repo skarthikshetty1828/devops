@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: fb-service
-  namespace: argocd 
+
   labels:
     app: fb-app
     env: prod
