@@ -4,7 +4,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: argo-deploy
-  namespace: argocd
+
   labels:
     app: argo-app
     env: prod
