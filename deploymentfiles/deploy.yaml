@@ -26,6 +26,6 @@ spec:
     spec:
       containers:
         - name: argo-container
-          image: karthikshetty1828/argo:6
+          image: karthikshetty1828/argo:7
           ports:
             - containerPort: 8080
