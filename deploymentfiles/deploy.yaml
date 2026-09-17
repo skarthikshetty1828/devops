@@ -1,29 +1,31 @@
 
 ---
 apiVersion: apps/v1
-kind: Deployment 
+kind: Deployment
 metadata:
-  name: fb-deploy
+  name: argo-deploy
   labels:
-    app: fb-app
+    app: argo-app
     env: prod
+
 spec:
   replicas: 3
- 
+
   selector:
     matchLabels:
-      app: fb-app
+      app: argo-app
       env: prod
+
   template:
-    metadata: 
+    metadata:
       labels:
-        app: fb-app
+        app: argo-app
         env: prod
-        version: v2_vc
+        version: v1
 
     spec:
-      containers: 
-      - name: facebook-container
-        image: devopshubg333/batch17d:18
-        ports:
-        - containerPort: 8080
+      containers:
+        - name: argo-container
+          image: karthikshetty1828/argo:1
+          ports:
+            - containerPort: 8080
